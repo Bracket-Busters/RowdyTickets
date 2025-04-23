@@ -1,3 +1,5 @@
+package dao;
+
 import java.sql.*;
 
 public class DBTicketConnection {
@@ -7,7 +9,9 @@ public class DBTicketConnection {
         String password = "password";
         try{
             Connection conn = DriverManager.getConnection(url, username, password);
-            System.out.println("~.~.~.~ Connected to database successfully! ~.~.~.~");
+            System.out.println("~.~.~.~ Connected to database successfully! ~.~.~.~\n\n");
+            System.out.println("---- Welcome to RowdyTickets! -----");
+
 
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery("SELECT * FROM Users");
