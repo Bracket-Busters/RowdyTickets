@@ -7,7 +7,7 @@ CREATE DATABASE UTSA_Ticket_Reservation_System;
 USE UTSA_Ticket_Reservation_System;
 
 -- -----------------------------------------------------------
--- 1. Table Creation
+-- Table Creation
 -- -----------------------------------------------------------
 -- Create the Users table
 CREATE TABLE Users (
@@ -18,13 +18,36 @@ CREATE TABLE Users (
                        PhoneNumber VARCHAR(20)
 );
 
+-- Create the Seats table
+CREATE TABLE Seats (
+                       SeatID INT AUTO_INCREMENT PRIMARY KEY,
+                       SeatNumber VARCHAR(10) NOT NULL UNIQUE,
+                       seatRow VARCHAR(5) NOT NULL,
+                       Availability ENUM('Available', 'Unavailable') NOT NULL DEFAULT 'Available'
+);
+
+-- Create the Games table
+CREATE TABLE Games (
+                       GameID         INT AUTO_INCREMENT PRIMARY KEY,
+                       Team1          VARCHAR(100) NOT NULL,
+                       Team2          VARCHAR(100) NOT NULL,
+                       GameDate       DATE         NOT NULL UNIQUE,
+                       TotalSeats     INT          NOT NULL DEFAULT 500,
+                       AvailableSeats INT          NOT NULL DEFAULT 500
+);
+
 -- Create the Bookings table
 CREATE TABLE Bookings (
                           BookingID INT AUTO_INCREMENT PRIMARY KEY,
+                          UserID INT NOT NULL,
+                          GameID INT NOT NULL,
+                          SeatID INT NOT NULL,
                           Status VARCHAR(20) NOT NULL,
                           Date DATE NOT NULL,
-                          UserID INT NOT NULL,
-                          FOREIGN KEY (UserID) REFERENCES Users(UserID)
+                          FOREIGN KEY (UserID) REFERENCES Users(UserID),
+                          FOREIGN KEY (GameID) REFERENCES Games(GameID),
+                          FOREIGN KEY (SeatID) REFERENCES Seats(SeatID),
+                          UNIQUE KEY uq_game_seat (GameID, SeatID)
 );
 
 -- Create the Cancellations table
@@ -37,22 +60,16 @@ CREATE TABLE Cancellations (
                                FOREIGN KEY (UserID) REFERENCES Users(UserID)
 );
 
--- Create the Seats table
-CREATE TABLE Seats (
-                       SeatID INT AUTO_INCREMENT PRIMARY KEY,
-                       SeatNumber VARCHAR(10) NOT NULL UNIQUE,
-                       Availability ENUM('Available', 'Unavailable') NOT NULL DEFAULT 'Available'
-);
-
 -- -----------------------------------------------------------
--- 2. Insert Seat Data from Convocation Center
+-- Stored Procedures
 -- -----------------------------------------------------------
+-- Generate seats
 DELIMITER //
 CREATE PROCEDURE populateSeats()
 BEGIN
 	DECLARE i INT DEFAULT 1;
     WHILE i <= 500 DO
-		INSERT INTO Seats (SeatNumber, Availability)
+		INSERT INTO Seats (SeatNumber, seatRow, Availability)
         VALUES (
 			CASE
 				WHEN i <= 50 THEN CONCAT('A', LPAD(i, 2, '0'))
@@ -66,16 +83,32 @@ BEGIN
                 WHEN i <= 450 THEN CONCAT('I', LPAD(i - 400, 2, '0'))
                 WHEN i <= 500 THEN CONCAT('J', LPAD(i - 450, 2, '0'))
 			END,
+            CHAR(65 + FLOOR((i-1)/50)),
             'Available'
             );
 		SET i = i+1;
 END WHILE;
 END//
+
+/*
+Purpose: The CancelBooking stored procedure allows a booking to be cancelled
+by updating its Status to 'Cancelled' for a given BookingID and UserID. Once the
+status is updated, the trigger (trg_after_booking_cancelled) automatically creates
+a cancellation record in the Cancellations table.
+Parameters:
+    in_BookingID - The identifier for the booking to cancel.
+    in_UserID    - The user associated with the booking.
+*/
+CREATE PROCEDURE CancelBooking(IN in_BookingID INT, IN in_UserID INT)
+BEGIN
+UPDATE Bookings
+SET Status = 'Cancelled'
+WHERE BookingID = in_BookingID AND UserID = in_UserID;
+END//
 DELIMITER ;
 
-CALL populateSeats();
 -- -----------------------------------------------------------
--- 3. Trigger Creation
+-- Triggers
 -- -----------------------------------------------------------
 /*
 Purpose: This AFTER UPDATE trigger on the Bookings table automatically
@@ -94,25 +127,55 @@ BEGIN
         VALUES (NEW.BookingID, NEW.UserID, CONCAT('CANC', NEW.BookingID), 'Pending');
 END IF;
 END$$
-DELIMITER ;
 
--- -----------------------------------------------------------
--- 4. Stored Procedure Creation
--- -----------------------------------------------------------
-/*
-Purpose: The CancelBooking stored procedure allows a booking to be cancelled
-by updating its Status to 'Cancelled' for a given BookingID and UserID. Once the
-status is updated, the trigger (trg_after_booking_cancelled) automatically creates
-a cancellation record in the Cancellations table.
-Parameters:
-    in_BookingID - The identifier for the booking to cancel.
-    in_UserID    - The user associated with the booking.
-*/
-DELIMITER $$
-CREATE PROCEDURE CancelBooking(IN in_BookingID INT, IN in_UserID INT)
+-- On booking insert → decrement available seats & mark seat unavailable
+CREATE TRIGGER trg_after_booking_confirm
+    AFTER INSERT ON Bookings
+    FOR EACH ROW
 BEGIN
-UPDATE Bookings
-SET Status = 'Cancelled'
-WHERE BookingID = in_BookingID AND UserID = in_UserID;
+    IF NEW.Status = 'Confirmed' THEN
+    UPDATE Games
+    SET AvailableSeats = AvailableSeats - 1
+    WHERE GameID = NEW.GameID;
+    UPDATE Seats
+    SET Availability = 'Unavailable'
+    WHERE SeatID = NEW.SeatID;
+END IF;
+END$$
+
+-- On booking cancel → restore available seats & mark seat available
+CREATE TRIGGER trg_after_booking_cancel
+    AFTER UPDATE ON Bookings
+    FOR EACH ROW
+BEGIN
+    IF NEW.Status = 'Cancelled' AND OLD.Status <> 'Cancelled' THEN
+    UPDATE Games
+    SET AvailableSeats = AvailableSeats + 1
+    WHERE GameID = NEW.GameID;
+    UPDATE Seats
+    SET Availability = 'Available'
+    WHERE SeatID = OLD.SeatID;
+END IF;
 END$$
 DELIMITER ;
+-- -----------------------------------------------------------
+-- 4. Initialization
+-- -----------------------------------------------------------
+CALL populateSeats();
+
+INSERT INTO Games(Team1, Team2, GameDate) VALUES
+                                              ('UTSA', 'Trinity', '2024-11-04'),
+                                              ('USTA', 'Little Rock', '2024-11-16'),
+                                              ('UTSA', 'Merrimack', '2024-11-27'),
+                                              ('UTSA', 'Houston Christian', '2024-11-30'),
+                                              ('UTSA', 'North Dakota', '2024-12-13'),
+                                              ('UTSA', 'Southwestern Adventist', '2024-12-19'),
+                                              ('UTSA', 'Tulsa', '2025-01-07'),
+                                              ('UTSA', 'Wichita State', '2025-01-11'),
+                                              ('UTSA', 'North Texas', '2025-01-18'),
+                                              ('UTSA', 'Temple', '2025-01-25'),
+                                              ('UTSA', 'Tulane', '2025-02-05'),
+                                              ('UTSA', 'East Carolina', '2025-02-08'),
+                                              ('UTSA', 'South Florida', '2025-02-19'),
+                                              ('UTSA', 'Rice', '2025-03-02'),
+                                              ('UTSA', 'Memphis', '2025-03-04');
