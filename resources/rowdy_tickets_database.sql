@@ -15,7 +15,8 @@ CREATE TABLE Users (
                        FirstName VARCHAR(100) NOT NULL,
                        LastName VARCHAR(100) NOT NULL,
                        Email VARCHAR(100) NOT NULL UNIQUE,
-                       PhoneNumber VARCHAR(20)
+                       PhoneNumber VARCHAR(20),
+                       Password VARCHAR (255) NOT NULL
 );
 
 -- Create the Seats table
@@ -128,7 +129,7 @@ BEGIN
 END IF;
 END$$
 
--- On booking insert → decrement available seats & mark seat unavailable
+-- On booking insert -> decrement available seats & mark seat unavailable
 CREATE TRIGGER trg_after_booking_confirm
     AFTER INSERT ON Bookings
     FOR EACH ROW
@@ -143,7 +144,7 @@ BEGIN
 END IF;
 END$$
 
--- On booking cancel → restore available seats & mark seat available
+-- On booking cancel -> restore available seats & mark seat available
 CREATE TRIGGER trg_after_booking_cancel
     AFTER UPDATE ON Bookings
     FOR EACH ROW
@@ -159,7 +160,7 @@ END IF;
 END$$
 DELIMITER ;
 -- -----------------------------------------------------------
--- 4. Initialization
+-- Initialization
 -- -----------------------------------------------------------
 CALL populateSeats();
 
@@ -179,3 +180,31 @@ INSERT INTO Games(Team1, Team2, GameDate) VALUES
                                               ('UTSA', 'South Florida', '2025-02-19'),
                                               ('UTSA', 'Rice', '2025-03-02'),
                                               ('UTSA', 'Memphis', '2025-03-04');
+
+-- -----------------------------------------------------------
+-- Queries
+-- -----------------------------------------------------------
+-- Counts how many seats are available for a game
+SELECT AvailableSeats
+FROM Games
+WHERE GameID = 1;
+
+-- Shows each seat that is available for a certain game
+SELECT
+    s.SeatID,
+    s.SeatNumber,
+    s.SeatRow
+FROM Seats s
+         LEFT JOIN Bookings b
+                   ON  b.SeatID   = s.SeatID
+                       AND b.GameID   = 1
+                       AND b.Status   = 'Confirmed'
+WHERE s.Availability = 'Available'
+  AND b.BookingID IS NULL;
+
+-- Create sample users
+INSERT INTO Users(FirstName, LastName, Email, PhoneNumber, Password) VALUES
+    ('Emilio', 'Hernandez', 'emilio01@gmail.com', '210-394-3030', SHA2('UTSA', 256));
+
+-- find User based on password
+SELECT * FROM Users WHERE Password = SHA2('UTSA', 256);

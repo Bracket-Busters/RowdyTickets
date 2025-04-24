@@ -13,35 +13,12 @@ public class Seats {
         this.availabilityType = availabilityType;
     }
 
-    public int getSeatID() {
-        return seatID;
-    }
-
-    public String getSeatNumber() {
-        return seatNumber;
-    }
-
-    public String getSeatRow() {
-        return seatRow;
-    }
-
-    public String getAvailabilityType() {
-        return availabilityType;
-    }
-
-    public void setSeatID(int seatID) {
-        this.seatID = seatID;
-    }
-
-    public void setSeatNumber(String seatNumber) {
-        this.seatNumber = seatNumber;
-    }
-
-    public void setSeatRow(String seatRow) {
-        this.seatRow = seatRow;
-    }
-
-    public void setAvailabilityType(String availabilityType) {
-        this.availabilityType = availabilityType;
-    }
+    public int getSeatID() { return seatID; }
+    public String getSeatNumber() { return seatNumber; }
+    public String getSeatRow() { return seatRow; }
+    public String getAvailabilityType() { return availabilityType; }
+    public void setSeatID(int seatID) { this.seatID = seatID; }
+    public void setSeatNumber(String seatNumber) { this.seatNumber = seatNumber; }
+    public void setSeatRow(String seatRow) { this.seatRow = seatRow; }
+    public void setAvailabilityType(String availabilityType) { this.availabilityType = availabilityType; }
 }
