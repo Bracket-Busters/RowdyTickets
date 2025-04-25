@@ -1,8 +1,6 @@
-package dao;
-
 import java.sql.*;
 
-public class DBTicketConnection {
+public class Driver {
     public static void main(String[] args) {
         String url = "jdbc:mysql://localhost:3306/utsa_ticket_reservation_system";
         String username = "root";
@@ -16,7 +14,10 @@ public class DBTicketConnection {
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery("SELECT * FROM Users");
 
-            while (rs.next()){ System.out.println(rs.getString("FirstName")); }
+            int input = 1;
+            while (input != 0){
+
+            }
 
             rs.close();
             stmt.close();
