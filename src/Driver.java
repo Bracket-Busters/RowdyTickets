@@ -9,7 +9,7 @@ public class Driver {
     public static void main(String[] args) {
         String url = "jdbc:mysql://localhost:3306/utsa_ticket_reservation_system";
         String username = "root";
-        String password = "password";
+        String password = "Jordan is the GOAT23!";
         try (Connection conn = DriverManager.getConnection(url, username, password);
              Scanner scan = new Scanner(System.in))
         {
@@ -131,14 +131,14 @@ public class Driver {
                         break;
                     case 5:
                         System.out.println("\n--- All Games ----");
-                        allGames.forEach(g -> {
+                        for(Game g : allGames){
                             System.out.println("Game ID: " + g.getGameID() +
-                                                "\n Team 1: " + g.getTeamOne() +
-                                                "\n Team 2: " + g.getTeamTwo() +
-                                                "\n Date of Game: " + g.getDate() +
-                                                "\n Number of Seats Available: " + g.getAvailableSeats()
+                                    "\n Team 1: " + g.getTeamOne() +
+                                    "\n Team 2: " + g.getTeamTwo() +
+                                    "\n Date of Game: " + g.getDate() +
+                                    "\n Number of Seats Available: " + g.getAvailableSeats()
                             );
-                        });
+                        }
                         break;
                     case 6:
                         break;

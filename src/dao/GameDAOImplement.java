@@ -52,26 +52,12 @@ public class GameDAOImplement implements GameDAO {
                             rs.getInt("TotalSeats"),
                             rs.getInt("AvailableSeats")
                     );
+                    games.add(game);
                 }
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return games;
-    }
-
-    @Override
-    public void addGame(Game game) {
-
-    }
-
-    @Override
-    public void updateGame(Game game) {
-
-    }
-
-    @Override
-    public void deleteGame(Game game) {
-
     }
 }
