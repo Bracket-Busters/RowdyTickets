@@ -2,9 +2,12 @@ package dao;
 
 import dto.Seats;
 
+import java.sql.Connection;
 import java.util.List;
 
 public class SeatsDAOImplement implements SeatsDAO {
+    private Connection conn;
+    public SeatsDAOImplement(Connection conn) { this.conn = conn; }
 
     @Override
     public void insertSeats(Seats seats) {

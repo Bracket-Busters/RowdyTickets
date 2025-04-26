@@ -2,33 +2,28 @@ package dao;
 
 import dto.Cancellation;
 
+import java.sql.Connection;
 import java.util.List;
 
 import java.sql.*;
 
 public class CancellationDAOImplement implements CancellationDAO {
     private Connection conn;
+<<<<<<< HEAD
 
+=======
+>>>>>>> 17f9c4d089f41f7e0b079d325fd77beba83e2b53
     public CancellationDAOImplement(Connection conn) {
         this.conn = conn;
     }
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 17f9c4d089f41f7e0b079d325fd77beba83e2b53
     @Override
     public void addCancellation(Cancellation cancellation) {
-        String sql = "INSERT INTO bookings (BookingID, UserID, GameID, SeatID, Status, Date) VALUES (?, ?, ?, ?, ?, ?)";
 
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setInt(1, booking.getBookingId());
-            ps.setInt(2, booking.getUser().getUserID());
-            ps.setInt(3, booking.getGame().getGameID());
-            ps.setInt(4, booking.getSeats().getSeatID());
-            ps.setString(5, booking.getStatus());
-            ps.setDate(6, new java.sql.Date(booking.getDate().getTime()));
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } 
     }
 
     @Override

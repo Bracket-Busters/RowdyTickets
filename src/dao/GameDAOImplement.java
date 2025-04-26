@@ -2,9 +2,13 @@ package dao;
 
 import dto.Game;
 
+import java.sql.Connection;
 import java.util.List;
 
 public class GameDAOImplement implements GameDAO {
+    private Connection conn;
+    public GameDAOImplement(Connection conn) { this.conn = conn; }
+
     @Override
     public Game getGame(int id) {
         return null;
