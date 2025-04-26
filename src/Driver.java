@@ -9,7 +9,7 @@ public class Driver {
     public static void main(String[] args) {
         String url = "jdbc:mysql://localhost:3306/utsa_ticket_reservation_system";
         String username = "root";
-        String password = "Jordan is the GOAT23!";
+        String password = "password";
         try (Connection conn = DriverManager.getConnection(url, username, password);
              Scanner scan = new Scanner(System.in))
         {
