@@ -14,13 +14,14 @@ public class UserDAOImplement implements UserDAO {
 
     @Override
     public void addUser(User user) {
-        String sql = "INSERT INTO Users (FirstName, LastName, Email, Password) VALUES (?,?,?,?,?)";
+        String sql = "INSERT INTO Users (FirstName, LastName, Email, PhoneNumber, Password) VALUES (?,?,?,?,?)";
         try(PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setString(1, user.getFirstName());
             ps.setString(2, user.getLastName());
             ps.setString(3, user.getEmail());
-            ps.setString(4, user.getPassword());
+            ps.setString(4, user.getPhoneNumber());
+            ps.setString(5, user.getPassword());
             ps.executeUpdate();
 
             try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
@@ -53,6 +54,7 @@ public class UserDAOImplement implements UserDAO {
                             rs.getString("FirstName"),
                             rs.getString("LastName"),
                             rs.getString("Email"),
+                            rs.getString("PhoneNumber"),
                             rs.getString("Password")
                     );
                 }
@@ -71,7 +73,7 @@ public class UserDAOImplement implements UserDAO {
 
     @Override
     public User login(String email, String password) {
-        String sql = "SELECT UserID, FirstName, LastName, Email, Password FROM Users WHERE Email = ? AND Password = ?";
+        String sql = "SELECT UserID, FirstName, LastName, Email, PhoneNumber, Password FROM Users WHERE Email = ? AND Password = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)){
             ps.setString(1, email);
             ps.setString(2, password);
@@ -82,6 +84,7 @@ public class UserDAOImplement implements UserDAO {
                             rs.getString("FirstName"),
                             rs.getString("LastName"),
                             rs.getString("Email"),
+                            rs.getString("PhoneNumber"),
                             rs.getString("Password")
                     );
                 }

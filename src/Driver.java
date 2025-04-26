@@ -2,6 +2,7 @@ import dao.*;
 import dto.*;
 
 import java.sql.*;
+import java.util.List;
 import java.util.Scanner;
 
 public class Driver {
@@ -9,9 +10,10 @@ public class Driver {
         String url = "jdbc:mysql://localhost:3306/utsa_ticket_reservation_system";
         String username = "root";
         String password = "password";
-        try{
-            Connection conn = DriverManager.getConnection(url, username, password);
-            Scanner scan = new Scanner(System.in);
+        try (Connection conn = DriverManager.getConnection(url, username, password);
+             Scanner scan = new Scanner(System.in))
+        {
+
             System.out.println("~.~.~.~ Connected to database successfully! ~.~.~.~\n\n");
             System.out.println("---- Welcome to RowdyTickets! -----");
 
@@ -51,11 +53,13 @@ public class Driver {
                         String newLastName = scan.nextLine().trim();
                         System.out.print("Enter Email: ");
                         String newEmail = scan.nextLine().trim();
+                        System.out.print("Enter Phone Number (ex. 999-999-9999): ");
+                        String newPhoneNumber = scan.nextLine().trim();
                         System.out.print("Enter Password: ");
                         String newPassword = scan.nextLine().trim();
-                        User newUser = new User(newFirstName, newLastName, newEmail, newPassword);
+                        User newUser = new User(newFirstName, newLastName, newEmail,newPhoneNumber, newPassword);
                         userDAO.addUser(newUser);
-                        System.out.println("Account Created! Logged in as " + newUser.getFirstName() + " " + newUser.getLastName() + "\n");
+                        System.out.println("Account Created! You can now login! \n");
                         break;
 
                     case "3":
@@ -66,6 +70,8 @@ public class Driver {
                         System.out.println("Invalid choice. Please try again. \n");
                 }
             }
+
+            List<Game> allGames = gameDAO.getAllGames();
 
 
             boolean input = true;
@@ -91,14 +97,48 @@ public class Driver {
 
                 switch(choice){
                     case 1:
+                        System.out.print("Enter Game ID: ");
+                        int gameID = Integer.parseInt(scan.nextLine().trim());
+                        System.out.print("Enter Seat ID: ");
+                        int seatID = Integer.parseInt(scan.nextLine().trim());
+
+                        Game game = gameDAO.getGame(gameID);
+                        Seats seat = seatsDAO.selectSeatsById(seatID);
+
+                        Booking newBooking = new Booking(currentUser, game, seat, "Confirmed", new java.util.Date());
+                        bookingDAO.addBooking(newBooking);
+                        System.out.println("Booking Created! Booking ID: " + newBooking.getBookingId());
                         break;
                     case 2:
+                        List<Booking> myBookings = bookingDAO.getAllBookingsAndDetailsByUserId(currentUser.getUserID());
+                        System.out.println("\n ----- " + currentUser.getFirstName() + " " + currentUser.getLastName() + " Booking Details ------");
+                        if (myBookings.isEmpty()){
+                            System.out.println("You have no bookings yet. Please try again later.\n.");
+                        } else {
+                            myBookings.forEach( b -> {
+                                System.out.println("Booking ID: " + b.getBookingId() +
+                                                    "\n Game ID: " + b.getGame().getGameID() +
+                                                    "\n Matchup: " + b.getGame().getTeamOne() + " vs " + b.getGame().getTeamTwo() +
+                                                    "\n Status: " + b.getStatus() +
+                                                    "\n Date Purchased: " +b.getDate()
+                                );
+                            });
+                        }
                         break;
                     case 3:
                         break;
                     case 4:
                         break;
                     case 5:
+                        System.out.println("\n--- All Games ----");
+                        allGames.forEach(g -> {
+                            System.out.println("Game ID: " + g.getGameID() +
+                                                "\n Team 1: " + g.getTeamOne() +
+                                                "\n Team 2: " + g.getTeamTwo() +
+                                                "\n Date of Game: " + g.getDate() +
+                                                "\n Number of Seats Available: " + g.getAvailableSeats()
+                            );
+                        });
                         break;
                     case 6:
                         break;
