@@ -72,6 +72,7 @@ public class Driver {
             }
 
             List<Game> allGames = gameDAO.getAllGames();
+            List<Seats> seatsByGame;
 
 
             boolean input = true;
@@ -141,6 +142,11 @@ public class Driver {
                         }
                         break;
                     case 6:
+                        System.out.println("Provide a Game ID: ");
+                        int gameId = Integer.parseInt(scan.nextLine().trim());
+                        seatsByGame = seatsDAO.selectAvailableSeatsByGameId(gameId);
+                        System.out.println("\n--- Available Seats ----");
+
                         break;
                     case 7:
                         input = false;
