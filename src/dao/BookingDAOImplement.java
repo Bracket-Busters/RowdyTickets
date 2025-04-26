@@ -15,16 +15,15 @@ public class BookingDAOImplement implements BookingDAO {
 
     @Override
     public void addBooking(Booking booking) {
-        String sql = "INSERT INTO bookings (BookingID, UserID, GameID, SeatID, Status, Date) VALUES (?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO bookings (UserID, GameID, SeatID, Status, Date) VALUES (?, ?, ?, ?, ?, ?)";
 
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setInt(1, booking.getBookingId());
-            ps.setInt(2, booking.getUser().getUserID());
-            ps.setInt(3, booking.getGame().getGameID());
-            ps.setInt(4, booking.getSeats().getSeatID());
-            ps.setString(5, booking.getStatus());
-            ps.setDate(6, new java.sql.Date(booking.getDate().getTime()));
+            ps.setInt(1, booking.getUser().getUserID());
+            ps.setInt(2, booking.getGame().getGameID());
+            ps.setInt(3, booking.getSeats().getSeatID());
+            ps.setString(4, booking.getStatus());
+            ps.setDate(5, new java.sql.Date(booking.getDate().getTime()));
 
         } catch (SQLException e) {
             e.printStackTrace();
