@@ -69,7 +69,7 @@ public class Driver {
 
 
             boolean input = true;
-            while (input != false){
+            while (input){
                 System.out.println("Please choose one of the following options:");
                 System.out.println("1. Purchase a Booking");
                 System.out.println("2. View all Bookings Made");
