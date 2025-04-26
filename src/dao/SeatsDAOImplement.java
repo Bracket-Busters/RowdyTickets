@@ -1,8 +1,12 @@
 package dao;
 
 import dto.Seats;
+import dto.User;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 
 public class SeatsDAOImplement implements SeatsDAO {
@@ -35,7 +39,24 @@ public class SeatsDAOImplement implements SeatsDAO {
     }
 
     @Override
-    public Seats selectSeatsById(int id) {
+    public Seats selectSeatsById(int seatID) {
+        String sql = "SELECT * FROM Seats WHERE SeatID = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)){
+            ps.setInt(1, seatID);
+            try (ResultSet rs = ps.executeQuery()){
+                if (rs.next()){
+                    return new Seats(
+                            rs.getInt("SeatID"),
+                            rs.getString("SeatNumber"),
+                            rs.getString("seatRow"),
+                            rs.getString("Availability")
+                    );
+                }
+            }
+
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
         return null;
     }
 }

@@ -3,6 +3,9 @@ package dao;
 import dto.Game;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 
 public class GameDAOImplement implements GameDAO {
@@ -10,7 +13,25 @@ public class GameDAOImplement implements GameDAO {
     public GameDAOImplement(Connection conn) { this.conn = conn; }
 
     @Override
-    public Game getGame(int id) {
+    public Game getGame(int gameId) {
+        String sql = "SELECT * FROM Games WHERE gameId = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)){
+            ps.setInt(1, gameId);
+            try (ResultSet rs = ps.executeQuery()){
+                if(rs.next()){
+                    return new Game(
+                            rs.getInt("GameID)"),
+                            rs.getString("Team1"),
+                            rs.getString("Team2"),
+                            rs.getDate("Date"),
+                            rs.getInt("TotalSeats"),
+                            rs.getInt("AvailableSeats")
+                    );
+                }
+            }
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
         return null;
     }
 

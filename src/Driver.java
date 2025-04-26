@@ -74,22 +74,41 @@ public class Driver {
                 System.out.println("1. Purchase a Booking");
                 System.out.println("2. View all Bookings Made");
                 System.out.println("3. Cancel a Booking");
-                System.out.println("4. View Games");
-                System.out.println("5. View Available Seats for a Game");
-                System.out.println("6. Exit");
-                System.out.print("Enter your choice (1-6): ");
+                System.out.println("4. View all Cancellations");
+                System.out.println("5. View all Games");
+                System.out.println("6. View Available Seats for a Game");
+                System.out.println("7. Exit");
+                System.out.print("Enter your choice (1-7): ");
 
                 String line = scan.nextLine().trim();
                 int choice;
                 try {
                     choice = Integer.parseInt(line);
                 } catch (NumberFormatException e) {
-                    System.out.println("Please enter a valid choice (1-6): ");
+                    System.out.println("Please enter a valid choice (1-7): ");
                     continue;
                 }
 
                 switch(choice){
                     case 1:
+                        break;
+                    case 2:
+                        break;
+                    case 3:
+                        break;
+                    case 4:
+                        break;
+                    case 5:
+                        break;
+                    case 6:
+                        break;
+                    case 7:
+                        input = false;
+                        System.out.println("Goodbye!");
+                        break;
+                    default:
+                        System.out.println("Invalid choice. Please try again. \n");
+                        break;
                 }
 
             }

@@ -1,7 +1,8 @@
 package dao;
 
-import dto.Booking;
+import dto.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import java.sql.*;
@@ -16,7 +17,6 @@ public class BookingDAOImplement implements BookingDAO {
     @Override
     public void addBooking(Booking booking) {
         String sql = "INSERT INTO bookings (UserID, GameID, SeatID, Status, Date) VALUES (?, ?, ?, ?, ?, ?)";
-
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, booking.getUser().getUserID());
@@ -24,64 +24,69 @@ public class BookingDAOImplement implements BookingDAO {
             ps.setInt(3, booking.getSeats().getSeatID());
             ps.setString(4, booking.getStatus());
             ps.setDate(5, new java.sql.Date(booking.getDate().getTime()));
+            ps.executeUpdate();
 
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Override
-    public void updateBooking(Booking booking) {
-        String sql = "UPDATE bookings SET BookingID = ?, UserID = ?, GameID = ?, SeatID = ?, Status = ?, Date = ?";
-
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, booking.getBookingId());
-            ps.setInt(2, booking.getUser().getUserID());
-            ps.setInt(3, booking.getGame().getGameID());
-            ps.setInt(4, booking.getSeats().getSeatID());
-            ps.setString(5, booking.getStatus());
-            ps.setDate(6, new java.sql.Date(booking.getDate().getTime()));
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Override
-    public void deleteBooking(Booking booking) {
-
-    }
-
-    @Override
-    public Booking getBooking(int id) {
-        String sql = "SELECT * FROM bookings WHERE BookingId = ?";
-        Booking booking = null;
-
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, id);
-
-            ResultSet rs = ps.executeQuery();
-
-            if (rs.next()) {
-                int bookingId = rs.getInt("BookingID");
-                int userId = rs.getInt("UserID");
-                int gameId = rs.getInt("GameID");
-                int seatId = rs.getInt("SeatID");
-                int status = rs.getInt("Status");
-                int date = rs.getInt("Date");
-
-                booking = new Booking(bookingId, userId, gameId, seatId, status, date);
+            try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    booking.setBookingId(generatedKeys.getInt(1));
+                } else {
+                    throw new SQLException("Failed to insert booking record, no ID obtained.");
+                }
             }
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
-        return booking;
     }
 
+    @Override
+    public void cancelBooking(int bookingID) {
+        String sql = "UPDATE bookings SET Status = ? WHERE BookingID = ?";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, "Cancelled");
+            ps.setInt(2, bookingID);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
 
     @Override
-    public List<Booking> getBookings() {
+    public List<Booking> getAllBookingsAndDetailsByUserId(int userID) {
+        List<Booking> bookings = new ArrayList<Booking>();
+
+        String sql = """
+                SELECT bookingID, UserID, GameID, SeatID, Status, Date
+                FROM bookings
+                WHERE UserID = ?
+                """;
+        try (PreparedStatement ps = conn.prepareStatement(sql)){
+            ps.setInt(1, userID);
+            try (ResultSet rs = ps.executeQuery()) {
+                UserDAO userDAO = new UserDAOImplement(conn);
+                GameDAO gameDAO = new GameDAOImplement(conn);
+                SeatsDAO seatsDAO = new SeatsDAOImplement(conn);
+
+                while (rs.next()) {
+                    int bookingID = rs.getInt("bookingID");
+                    int UserID = rs.getInt("UserID");
+                    int GameID = rs.getInt("GameID");
+                    int SeatID = rs.getInt("SeatID");
+                    String Status = rs.getString("Status");
+                    Date Date = rs.getDate("Date");
+
+                    User user = userDAO.getUser(UserID);
+                    Game game = gameDAO.getGame(GameID);
+                    Seats seats = seatsDAO.selectSeatsById(SeatID);
+
+                    bookings.add(new Booking(bookingID, user, game, seats, Status, Date));
+                }
+            }
+
+        }catch (SQLException e) {
+            e.printStackTrace();
+        }
+
         return List.of();
     }
 }

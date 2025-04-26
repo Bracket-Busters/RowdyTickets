@@ -20,6 +20,10 @@ public class Booking {
         this.date = date;
     }
 
+    public Booking(User user, Game game, Seats seats, String status, Date date) {
+        this(0,user,game,seats,status,date);
+    }
+
     public int getBookingId() { return bookingId; }
     public User getUser() { return user; }
     public Game getGame() { return game; }

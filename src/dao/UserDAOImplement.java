@@ -37,17 +37,30 @@ public class UserDAOImplement implements UserDAO {
     }
 
     @Override
-    public void updateUser(User user) {
-
-    }
-
-    @Override
     public void deleteUser(User user) {
 
     }
 
     @Override
-    public User getUser(int id) {
+    public User getUser(int userID) {
+        String sql = "SELECT * FROM Users WHERE UserID = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)){
+            ps.setInt(1, userID);
+            try (ResultSet rs = ps.executeQuery()){
+                if (rs.next()){
+                    return new User(
+                            rs.getInt("UserID"),
+                            rs.getString("FirstName"),
+                            rs.getString("LastName"),
+                            rs.getString("Email"),
+                            rs.getString("Password")
+                    );
+                }
+            }
+
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
         return null;
     }
 

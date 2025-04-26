@@ -9,18 +9,11 @@ import java.sql.*;
 
 public class CancellationDAOImplement implements CancellationDAO {
     private Connection conn;
-<<<<<<< HEAD
 
-=======
->>>>>>> 17f9c4d089f41f7e0b079d325fd77beba83e2b53
     public CancellationDAOImplement(Connection conn) {
         this.conn = conn;
     }
 
-<<<<<<< HEAD
-=======
-
->>>>>>> 17f9c4d089f41f7e0b079d325fd77beba83e2b53
     @Override
     public void addCancellation(Cancellation cancellation) {
 
