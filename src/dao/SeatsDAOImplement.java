@@ -15,22 +15,22 @@ public class SeatsDAOImplement implements SeatsDAO {
     public SeatsDAOImplement(Connection conn) { this.conn = conn; }
 
     @Override
-    public void insertSeats(Seats seats) {
-
-    }
-
-    @Override
-    public void updateSeats(Seats seats) {
-
-    }
-
-    @Override
-    public void deleteSeats(Seats seats) {
-
-    }
-
-    @Override
-    public Seats selectSeats(Seats seats) {
+    public Seats getSeats() {
+        String sql = "SELECT * FROM Seats";
+        try (PreparedStatement ps = conn.prepareStatement(sql)){
+            try (ResultSet rs = ps.executeQuery()){
+                if (rs.next()){
+                    return new Seats(
+                            rs.getInt("SeatID"),
+                            rs.getString("SeatNumber"),
+                            rs.getString("seatRow"),
+                            rs.getString("Avialability")
+                    );
+                }
+            }
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
         return null;
     }
 
@@ -59,7 +59,7 @@ public class SeatsDAOImplement implements SeatsDAO {
                             rs.getInt("SeatID"),
                             rs.getString("SeatNumber"),
                             rs.getString("seatRow"),
-                            rs.getString("Availability")
+                            "Available"
                     );
 
                     seatsByGame.add(seats);

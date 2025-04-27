@@ -16,8 +16,8 @@ public class BookingDAOImplement implements BookingDAO {
 
     @Override
     public void addBooking(Booking booking) {
-        String sql = "INSERT INTO bookings (UserID, GameID, SeatID, Status, Date) VALUES (?, ?, ?, ?, ?, ?)";
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        String sql = "INSERT INTO bookings (UserID, GameID, SeatID, Status, Date) VALUES (?, ?, ?, ?, ?)";
+        try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setInt(1, booking.getUser().getUserID());
             ps.setInt(2, booking.getGame().getGameID());
@@ -56,7 +56,7 @@ public class BookingDAOImplement implements BookingDAO {
         List<Booking> bookings = new ArrayList<Booking>();
 
         String sql = """
-                SELECT bookingID, UserID, GameID, SeatID, Status, Date
+                SELECT BookingID, UserID, GameID, SeatID, Status, Date
                 FROM bookings
                 WHERE UserID = ?
                 """;
@@ -68,7 +68,7 @@ public class BookingDAOImplement implements BookingDAO {
                 SeatsDAO seatsDAO = new SeatsDAOImplement(conn);
 
                 while (rs.next()) {
-                    int bookingID = rs.getInt("bookingID");
+                    int bookingID = rs.getInt("BookingID");
                     int UserID = rs.getInt("UserID");
                     int GameID = rs.getInt("GameID");
                     int SeatID = rs.getInt("SeatID");
@@ -87,6 +87,6 @@ public class BookingDAOImplement implements BookingDAO {
             e.printStackTrace();
         }
 
-        return List.of();
+        return bookings;
     }
 }

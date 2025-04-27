@@ -3,13 +3,15 @@ import dto.*;
 
 import java.sql.*;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 
 public class Driver {
     public static void main(String[] args) {
         String url = "jdbc:mysql://localhost:3306/utsa_ticket_reservation_system";
         String username = "root";
-        String password = "password";
+        String password = "Jordan is the GOAT23!";
         try (Connection conn = DriverManager.getConnection(url, username, password);
              Scanner scan = new Scanner(System.in))
         {
@@ -72,7 +74,7 @@ public class Driver {
             }
 
             List<Game> allGames = gameDAO.getAllGames();
-            List<Seats> seatsByGame;
+            Map<Integer, Game> gameCache = allGames.stream().collect(Collectors.toMap(Game::getGameID, g -> g));
 
 
             boolean input = true;
@@ -98,19 +100,52 @@ public class Driver {
 
                 switch(choice){
                     case 1:
+                        // --- Purchase ---
+                        // 1. show games
+                        System.out.println("\n--- Games ---");
+                        allGames.forEach(g -> {
+                            System.out.println("Game ID: " + g.getGameID() +
+                                                "\n Team 1: " + g.getTeamOne() +
+                                                "\n Team 2: " + g.getTeamTwo() +
+                                                "\n Date of Game: " + g.getDate() +
+                                                "\n Number of Seats Available: " + g.getAvailableSeats() + "\n"
+                            );
+                        });
+                        // 2. pick a game
                         System.out.print("Enter Game ID: ");
                         int gameID = Integer.parseInt(scan.nextLine().trim());
+                        Game game = gameCache.get(gameID);
+                        if (game == null){
+                            System.out.println("Invalid game ID. Please try again. \n");
+                            break;
+                        }
+
+                        // 3. show available seats
+                        List<Seats> available = seatsDAO.selectAvailableSeatsByGameId(gameID);
+                        if (available.isEmpty()) {
+                            System.out.println("No seats available for that game.");
+                            break;
+                        }
+                        System.out.println("\n--- Available Seats ---");
+                        available.forEach(s -> {
+                            System.out.println("Seat ID: " + s.getSeatID() + " | Seat Number: " + s.getSeatNumber() + " | Section: " + s.getSeatRow() + "\n");
+                        });
+
+                        // 4. pick a seat
                         System.out.print("Enter Seat ID: ");
                         int seatID = Integer.parseInt(scan.nextLine().trim());
-
-                        Game game = gameDAO.getGame(gameID);
                         Seats seat = seatsDAO.selectSeatsById(seatID);
+                        if (seat == null) {
+                            System.out.println("Invalid Seat ID.");
+                            break;
+                        }
 
                         Booking newBooking = new Booking(currentUser, game, seat, "Confirmed", new java.util.Date());
                         bookingDAO.addBooking(newBooking);
                         System.out.println("Booking Created! Booking ID: " + newBooking.getBookingId());
                         break;
                     case 2:
+                        // --- View All Bookings Made By User ---
                         List<Booking> myBookings = bookingDAO.getAllBookingsAndDetailsByUserId(currentUser.getUserID());
                         System.out.println("\n ----- " + currentUser.getFirstName() + " " + currentUser.getLastName() + " Booking Details ------");
                         if (myBookings.isEmpty()){
@@ -121,7 +156,7 @@ public class Driver {
                                                     "\n Game ID: " + b.getGame().getGameID() +
                                                     "\n Matchup: " + b.getGame().getTeamOne() + " vs " + b.getGame().getTeamTwo() +
                                                     "\n Status: " + b.getStatus() +
-                                                    "\n Date Purchased: " +b.getDate()
+                                                    "\n Date Purchased: " +b.getDate() +"\n"
                                 );
                             });
                         }
@@ -137,16 +172,18 @@ public class Driver {
                                     "\n Team 1: " + g.getTeamOne() +
                                     "\n Team 2: " + g.getTeamTwo() +
                                     "\n Date of Game: " + g.getDate() +
-                                    "\n Number of Seats Available: " + g.getAvailableSeats()
+                                    "\n Number of Seats Available: " + g.getAvailableSeats() + "\n"
                             );
                         }
                         break;
                     case 6:
-                        System.out.println("Provide a Game ID: ");
+                        System.out.print("Provide a Game ID: ");
                         int gameId = Integer.parseInt(scan.nextLine().trim());
-                        seatsByGame = seatsDAO.selectAvailableSeatsByGameId(gameId);
+                        List<Seats> seatsAvailableByGame = seatsDAO.selectAvailableSeatsByGameId(gameId);
                         System.out.println("\n--- Available Seats ----");
-
+                        for (Seats s : seatsAvailableByGame){
+                            System.out.println("Seat ID: " + s.getSeatID() + " | Seat Number: " + s.getSeatNumber() + " | Section: " + s.getSeatRow() + "\n");
+                        }
                         break;
                     case 7:
                         input = false;

@@ -22,10 +22,10 @@ public class GameDAOImplement implements GameDAO {
             try (ResultSet rs = ps.executeQuery()){
                 if(rs.next()){
                     return new Game(
-                            rs.getInt("GameID)"),
+                            rs.getInt("GameID"),
                             rs.getString("Team1"),
                             rs.getString("Team2"),
-                            rs.getDate("Date"),
+                            rs.getDate("GameDate"),
                             rs.getInt("TotalSeats"),
                             rs.getInt("AvailableSeats")
                     );
