@@ -4,6 +4,7 @@ import dto.*;
 import java.sql.*;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Scanner;
 import java.util.stream.Collectors;
 
@@ -11,7 +12,7 @@ public class Driver {
     public static void main(String[] args) {
         String url = "jdbc:mysql://localhost:3306/utsa_ticket_reservation_system";
         String username = "root";
-        String password = "password";
+        String password = "Jordan is the GOAT23!";
         try (Connection conn = DriverManager.getConnection(url, username, password);
              Scanner scan = new Scanner(System.in))
         {
@@ -35,6 +36,7 @@ public class Driver {
 
                 String authChoice = scan.nextLine().trim();
                 switch (authChoice){
+                    // authenticates user login
                     case "1":
                         System.out.print("Enter email: ");
                         String email = scan.nextLine().trim();
@@ -49,6 +51,7 @@ public class Driver {
                         break;
 
                     case "2":
+                        // create a new user account
                         System.out.print("Enter First Name: ");
                         String newFirstName = scan.nextLine().trim();
                         System.out.print("Enter Last Name: ");
@@ -65,6 +68,7 @@ public class Driver {
                         break;
 
                     case "3":
+                        // exit
                         System.out.println("Goodbye!");
                         return;
 
@@ -75,7 +79,6 @@ public class Driver {
 
             List<Game> allGames = gameDAO.getAllGames();
             Map<Integer, Game> gameCache = allGames.stream().collect(Collectors.toMap(Game::getGameID, g -> g));
-
 
             boolean input = true;
             while (input){
@@ -100,7 +103,7 @@ public class Driver {
 
                 switch(choice){
                     case 1:
-                        // --- Purchase ---
+                        // purchase
                         // 1. show games
                         System.out.println("\n--- Games ---");
                         allGames.forEach(g -> {
@@ -145,7 +148,7 @@ public class Driver {
                         System.out.println("Booking Created! Booking ID: " + newBooking.getBookingId());
                         break;
                     case 2:
-                        // --- View All Bookings Made By User ---
+                        // View All Bookings Made By User
                         List<Booking> myBookings = bookingDAO.getAllBookingsAndDetailsByUserId(currentUser.getUserID());
                         System.out.println("\n ----- " + currentUser.getFirstName() + " " + currentUser.getLastName() + " Booking Details ------");
                         if (myBookings.isEmpty()){
@@ -163,10 +166,35 @@ public class Driver {
                         }
                         break;
                     case 3:
+                        // cancel a booking
+                        System.out.print("Provide a BookingID: ");
+                        int bookingID = Integer.parseInt(scan.nextLine().trim());
+                        int userID = currentUser.getUserID();
+                        boolean cancelled = bookingDAO.cancelBooking(bookingID, userID);
+                        if (!cancelled){
+                            System.out.println("Failed to cancel");
+                            break;
+                        }
+                        Booking cancelledBooking = bookingDAO.getBooking(bookingID);
+                        if (cancelledBooking != null && "Cancelled".equals(cancelledBooking.getStatus())) {
+                            System.out.println("✔ Booking cancelled.");
+                        } else {
+                            System.out.println("⚠️  Booking updated but status wasn’t set to Cancelled.");
+                        }
+
                         break;
                     case 4:
+                        List<Cancellation> allCancellationsForUser = cancellationDAO.getCancellationsByUserId(currentUser.getUserID());
+                        System.out.println("\n--- All Cancellations ---");
+                        allCancellationsForUser.forEach(c -> {
+                            System.out.println("Cancellation Id: " + c.getCancellationID() +
+                                                "\n Booking Id: " + c.getBooking().getBookingId() +
+                                                "\n User Id: " + c.getUser().getUserID() +"\n"
+                            );
+                        });
                         break;
                     case 5:
+                        // View All Games
                         System.out.println("\n--- All Games ----");
                         for(Game g : allGames){
                             System.out.println("Game ID: " + g.getGameID() +
@@ -178,6 +206,7 @@ public class Driver {
                         }
                         break;
                     case 6:
+                        // View all Seats available for a game
                         System.out.print("Provide a Game ID: ");
                         int gameId = Integer.parseInt(scan.nextLine().trim());
                         List<Seats> seatsAvailableByGame = seatsDAO.selectAvailableSeatsByGameId(gameId);
@@ -187,6 +216,7 @@ public class Driver {
                         }
                         break;
                     case 7:
+                        // exit
                         input = false;
                         System.out.println("Goodbye!");
                         break;

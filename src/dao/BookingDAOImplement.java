@@ -10,6 +10,7 @@ import java.sql.*;
 public class BookingDAOImplement implements BookingDAO {
     private Connection conn;
 
+
     public BookingDAOImplement(Connection conn) {
         this.conn = conn;
     }
@@ -40,16 +41,49 @@ public class BookingDAOImplement implements BookingDAO {
     }
 
     @Override
-    public void cancelBooking(int bookingID) {
-        String sql = "UPDATE bookings SET Status = ? WHERE BookingID = ?";
+    public boolean cancelBooking(int bookingID, int userID) {
+        String sql = "{CALL CancelBooking(?,?)}";
 
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, "Cancelled");
-            ps.setInt(2, bookingID);
+        try (CallableStatement cs = conn.prepareCall(sql)) {
+            cs.setInt(1, bookingID);
+            cs.setInt(2, userID);
+            int rowsAffected = cs.executeUpdate();
+            return rowsAffected > 0;
         } catch (SQLException e) {
             e.printStackTrace();
+            return false;
         }
     }
+
+    @Override
+    public Booking getBooking(int bookingId) {
+        String sql = "SELECT * FROM bookings WHERE bookingID = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, bookingId);
+            try (ResultSet rs = ps.executeQuery()) {
+                UserDAO userDAO = new UserDAOImplement(conn);
+                GameDAO gameDAO = new GameDAOImplement(conn);
+                SeatsDAO seatsDAO = new SeatsDAOImplement(conn);
+
+                if (rs.next()) {
+                    int returnedUserID = rs.getInt("UserId");
+                    int returnedGameID = rs.getInt("GameID");
+                    int returnedSeatID = rs.getInt("SeatID");
+                    String returnedStatus = rs.getString("Status");
+                    Date date = rs.getDate("Date");
+
+                    User user = userDAO.getUser(returnedUserID);
+                    Game game = gameDAO.getGame(returnedGameID);
+                    Seats seat = seatsDAO.selectSeatsById(returnedSeatID);
+                    return new Booking(bookingId, user, game, seat, returnedStatus, date);
+                }
+            }
+        } catch (SQLException e){
+            e.printStackTrace();
+        }
+        return null;
+    }
+
 
     @Override
     public List<Booking> getAllBookingsAndDetailsByUserId(int userID) {
