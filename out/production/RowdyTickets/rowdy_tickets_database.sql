@@ -124,8 +124,8 @@ CREATE TRIGGER trg_after_booking_cancelled
     FOR EACH ROW
 BEGIN
     IF NEW.Status = 'Cancelled' AND OLD.Status <> 'Cancelled' THEN
-        INSERT INTO Cancellations (BookingID, UserID, CancellationCode, RefundStatus)
-        VALUES (NEW.BookingID, NEW.UserID, CONCAT('CANC', NEW.BookingID), 'Pending');
+        INSERT INTO Cancellations (BookingID, UserID, RefundStatus)
+        VALUES (NEW.BookingID, NEW.UserID, 'Pending');
 END IF;
 END$$
 
@@ -202,9 +202,9 @@ FROM Seats s
 WHERE s.Availability = 'Available'
   AND b.BookingID IS NULL;
 
--- Create sample users
+-- Create sample user
 INSERT INTO Users(FirstName, LastName, Email, PhoneNumber, Password) VALUES
-    ('Emilio', 'Hernandez', 'emilio01@gmail.com', '210-394-3030', SHA2('UTSA', 256));
+    ('Emilio', 'Hernandez', 'emilio01@gmail.com', '210-394-3030', 'UTSA');
 
 -- find User based on password
-SELECT * FROM Users WHERE Password = SHA2('UTSA', 256);
+-- SELECT * FROM Users WHERE Password = SHA2('UTSA', 256);
